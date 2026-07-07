@@ -102,3 +102,81 @@
     </script>
 </body>
 </html>
+
+<div style="background: white; padding: 25px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 30px;">
+    <h3>➕ สร้างลิงก์สั้นใหม่</h3>
+    <div style="display: flex; gap: 15px; margin-bottom: 10px;">
+        <input type="text" id="inputShort" placeholder="ชื่อลิงก์สั้น เช่น msdhs" style="padding: 10px; width: 30%; border: 1px solid #ccc; border-radius: 6px;">
+        <input type="url" id="inputLong" placeholder="วางลิงก์ยาวตัวเต็มที่นี่..." style="padding: 10px; width: 55%; border: 1px solid #ccc; border-radius: 6px;">
+        <button id="btnSubmit" onclick="submitData()" style="background: #2563eb; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold;">บันทึก</button>
+    </div>
+    <span id="checkResult" style="font-size: 14px; font-weight: bold;"></span>
+</div>
+
+<script>
+    // 🛠️ วาง URL ของ Google Web App API ที่ได้จากหน้า Apps Script ตรงนี้
+    const webAppUrl = 'https://script.google.com/macros/s/XXXXX/exec'; 
+
+    // ดักฟังเหตุการณ์เมื่อ User พิมพ์ชื่อลิงก์สั้นเสร็จ (เมื่อหลุดโฟกัสจากช่องพิมพ์)
+    document.getElementById('inputShort').addEventListener('blur', function() {
+        const shortValue = this.value.trim().toLowerCase();
+        const resultSpan = document.getElementById('checkResult');
+        const submitBtn = document.getElementById('btnSubmit');
+        
+        if(!shortValue) return;
+
+        resultSpan.innerText = "⏳ กำลังตรวจสอบความซ้ำ...";
+        resultSpan.style.color = "#64748b";
+
+        // เทคนิค: วิ่งไปสแกนข้อมูลจาก JSON ดั้งเดิมที่เราโหลดมาโชว์ในตารางอยู่แล้ว (เร็วมาก ไม่หน่วงเซิร์ฟเวอร์)
+        // (สมมติว่าตัวแปร links ดึงข้อมูลมาจาก Sheet เรียบร้อยแล้วในฟังก์ชันโหลดตาราง)
+        // เพื่อความง่าย เราสามารถส่งไปเช็กกับข้อมูลที่เราดึงมาตอนทำตารางได้เลยครับ
+        
+        let isExist = false;
+        document.querySelectorAll('#linksTable tbody tr').forEach(row => {
+            const currentSlug = row.querySelector('td strong, td a').innerText.replace('/', '').trim().toLowerCase();
+            if(currentSlug === shortValue) {
+                isExist = true;
+            }
+        });
+
+        if (isExist) {
+            resultSpan.innerText = "❌ ชื่อนี้ถูกใช้งานไปแล้ว กรุณาใช้ชื่ออื่น";
+            resultSpan.style.color = "#ef4444";
+            submitBtn.disabled = true; // บล็อกปุ่มกดส่ง
+            submitBtn.style.background = "#94a3b8";
+        } else {
+            resultSpan.innerText = "✅ ชื่อนี้สามารถใช้งานได้!";
+            resultSpan.style.color = "#10b981";
+            submitBtn.disabled = false; // เปิดให้กดส่งได้
+            submitBtn.style.background = "#2563eb";
+        }
+    });
+
+    // ฟังก์ชันส่งข้อมูลไปบันทึกที่ Google Sheet หลังบ้าน
+    function submitData() {
+        const shortUrl = document.getElementById('inputShort').value;
+        const longUrl = document.getElementById('inputLong').value;
+        
+        if(!shortUrl || !longUrl) {
+            alert('กรุณากรอกข้อมูลให้ครบถ้วน');
+            return;
+        }
+
+        document.getElementById('btnSubmit').innerText = "กำลังบันทึก...";
+        
+        fetch(webAppUrl, {
+            method: 'POST',
+            mode: 'no-cors', // สั่งปิด CORS เพื่อให้ข้ามแพลตฟอร์มไป Google ได้ฟรี
+            cache: 'no-cache',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ shortUrl: shortUrl, longUrl: longUrl })
+        }).then(() => {
+            alert('🎉 บันทึกลิงก์สั้นสำเร็จ!');
+            location.reload(); // รีเฟรชหน้าเว็บเพื่อให้ตารางอัปเดตข้อมูลใหม่
+        }).catch(err => {
+            alert('เกิดข้อผิดพลาดในการบันทึกข้อมูล');
+            console.error(err);
+        });
+    }
+</script>
