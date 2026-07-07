@@ -26,8 +26,8 @@
         // 🛠️ SPREADSHEET ID ของคุณ
         const sheetId = '1Y1-OxdGd21LW2hjIJU79FGHr-ga7ynQ9hU3P1qxK4x0'; 
         
-        // อัปเดตเจาะจงไปยังแท็บฟอร์มหลักโดยตรง
-        const jsonUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=การตอบแบบฟอร์ม 1`;
+        // เปลี่ยนจาก Form%20Responses%201 เป็น การตอบกลับฟอร์ม 1
+        const jsonUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent('การตอบกลับฟอร์ม 1')}`;
 
         if (path) {
             fetch(jsonUrl)
