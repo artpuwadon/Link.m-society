@@ -28,7 +28,7 @@
         
         // ใช้ URL รูปแบบ gviz/tq เพื่อดึงข้อมูลเป็น JSON แทน CSV (แม่นยำกว่า 100%)
         // เปลี่ยนจากของเดิม ให้เป็นโค้ดบรรทัดนี้:
-        const jsonUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=CleanLinks`;
+        const jsonUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json`;
 
         if (path) {
             fetch(jsonUrl)
