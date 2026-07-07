@@ -23,18 +23,16 @@
         }
         path = path.replace(/^\/|\/$/g, '').trim().toLowerCase();
 
-        // 🛠️ แก้ไข SPREADSHEET ID ของคุณตรงนี้ 🛠️
+        // 🛠️ SPREADSHEET ID ของคุณ
         const sheetId = '1Y1-OxdGd21LW2hjIJU79FGHr-ga7ynQ9hU3P1qxK4x0'; 
         
-        // ใช้ URL รูปแบบ gviz/tq เพื่อดึงข้อมูลเป็น JSON แทน CSV (แม่นยำกว่า 100%)
-        // เปลี่ยนจากของเดิม ให้เป็นโค้ดบรรทัดนี้:
-        const jsonUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json`;
+        // อัปเดตเจาะจงไปยังแท็บฟอร์มหลักโดยตรง
+        const jsonUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=การตอบแบบฟอร์ม 1`;
 
         if (path) {
             fetch(jsonUrl)
                 .then(response => response.text())
                 .then(text => {
-                    // ตัดข้อความส่วนเกินที่ Google พ่วงมาเพื่อให้เหลือแค่ JSON ที่ถูกต้อง
                     const jsonString = text.substring(text.indexOf('{'), text.lastIndexOf('}') + 1);
                     const jsonData = JSON.parse(jsonString);
                     const rows = jsonData.table.rows;
@@ -42,10 +40,14 @@
                     const links = {};
                     
                     rows.forEach(row => {
-                        // เช็กว่าแถวมีข้อมูลครบตามฟอร์มหรือไม่ (ปกติ Col B คือช่องสั้น, Col C คือช่องยาว)
                         if (row.c && row.c[1] && row.c[2]) {
-                            const shortUrl = row.c[1].v.toString().trim().toLowerCase();
-                            const longUrl = row.c[2].v.toString().trim();
+                            // ดึงข้อมูลกรณีที่เป็น String หรือ Object จาก Google Sheet
+                            const shortVal = row.c[1] ? (row.c[1].v !== null ? row.c[1].v : '') : '';
+                            const longVal = row.c[2] ? (row.c[2].v !== null ? row.c[2].v : '') : '';
+                            
+                            const shortUrl = shortVal.toString().trim().toLowerCase();
+                            const longUrl = longVal.toString().trim();
+                            
                             if (shortUrl && longUrl) {
                                 links[shortUrl] = longUrl;
                             }
@@ -66,7 +68,6 @@
                     console.error(error);
                 });
         } else {
-            // ถ้าเข้าหน้าแรกเฉยๆ ให้วิ่งไป index.html
             window.location.href = repoName;
         }
     </script>
